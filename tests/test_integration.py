@@ -4,8 +4,8 @@ import time
 
 import pytest
 
-from prompt_cache import cache, clear_cache, get_stats, invalidate
-from prompt_cache.backends import MemoryBackend
+from semantic_llm_cache import cache, clear_cache, get_stats, invalidate
+from semantic_llm_cache.backends import MemoryBackend
 
 
 class TestEndToEnd:
@@ -204,7 +204,7 @@ class TestErrorHandling:
 
     def test_function_with_exception(self):
         """Test function that raises exception."""
-        from prompt_cache.exceptions import PromptCacheError
+        from semantic_llm_cache.exceptions import PromptCacheError
 
         backend = MemoryBackend()
 
@@ -226,7 +226,7 @@ class TestErrorHandling:
 
     def test_backend_error_handling(self):
         """Test that backend wraps errors properly."""
-        from prompt_cache.backends.memory import MemoryBackend
+        from semantic_llm_cache.backends.memory import MemoryBackend
 
         # Use MemoryBackend which has proper error handling
         backend = MemoryBackend()

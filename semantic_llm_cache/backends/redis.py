@@ -8,13 +8,13 @@ try:
 except ImportError as err:
     raise ImportError(
         "Redis backend requires 'redis' package. "
-        "Install with: pip install prompt-cache[redis]"
+        "Install with: pip install llm-semantic-cache[redis]"
     ) from err
 
 
-from prompt_cache.backends.base import BaseBackend
-from prompt_cache.config import CacheEntry
-from prompt_cache.exceptions import CacheBackendError
+from semantic_llm_cache.backends.base import BaseBackend
+from semantic_llm_cache.config import CacheEntry
+from semantic_llm_cache.exceptions import CacheBackendError
 
 
 class RedisBackend(BaseBackend):
@@ -25,7 +25,7 @@ class RedisBackend(BaseBackend):
     """
 
     # Default key prefix to avoid collisions
-    DEFAULT_PREFIX = "prompt_cache:"
+    DEFAULT_PREFIX = "semantic_llm_cache:"
 
     def __init__(
         self,

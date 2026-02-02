@@ -5,8 +5,8 @@ from typing import Any, Optional
 
 import numpy as np
 
-from prompt_cache.config import CacheEntry
-from prompt_cache.storage import StorageBackend
+from semantic_llm_cache.config import CacheEntry
+from semantic_llm_cache.storage import StorageBackend
 
 
 def cosine_similarity(a: list[float] | np.ndarray, b: list[float] | np.ndarray) -> float:

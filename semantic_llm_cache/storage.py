@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from prompt_cache.config import CacheEntry
+from semantic_llm_cache.config import CacheEntry
 
 
 class StorageBackend(ABC):

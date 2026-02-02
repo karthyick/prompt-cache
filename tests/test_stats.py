@@ -4,9 +4,9 @@ import time
 
 import pytest
 
-from prompt_cache.backends import MemoryBackend
-from prompt_cache.config import CacheEntry
-from prompt_cache.stats import (
+from semantic_llm_cache.backends import MemoryBackend
+from semantic_llm_cache.config import CacheEntry
+from semantic_llm_cache.stats import (
     CacheStats,
     _stats_manager,
     clear_cache,
@@ -377,7 +377,7 @@ class TestStatsIntegration:
 
     def test_stats_tracking_with_cache_decorator(self):
         """Test that stats are tracked during cache operations."""
-        from prompt_cache import cache
+        from semantic_llm_cache import cache
 
         backend = MemoryBackend()
         _stats_manager.clear_stats("integration_test")

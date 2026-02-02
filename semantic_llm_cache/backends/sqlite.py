@@ -5,9 +5,9 @@ import sqlite3
 from pathlib import Path
 from typing import Any, Optional
 
-from prompt_cache.backends.base import BaseBackend
-from prompt_cache.config import CacheEntry
-from prompt_cache.exceptions import CacheBackendError
+from semantic_llm_cache.backends.base import BaseBackend
+from semantic_llm_cache.config import CacheEntry
+from semantic_llm_cache.exceptions import CacheBackendError
 
 
 class SQLiteBackend(BaseBackend):

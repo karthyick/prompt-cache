@@ -1,18 +1,18 @@
-"""Core cache decorator and API for prompt-cache."""
+"""Core cache decorator and API for llm-semantic-cache."""
 
 import functools
 import time
 from typing import Any, Callable, Optional, ParamSpec, TypeVar
 
-from prompt_cache.backends import MemoryBackend
-from prompt_cache.backends.base import BaseBackend
-from prompt_cache.config import CacheConfig, CacheEntry
-from prompt_cache.exceptions import PromptCacheError
-from prompt_cache.similarity import (
+from semantic_llm_cache.backends import MemoryBackend
+from semantic_llm_cache.backends.base import BaseBackend
+from semantic_llm_cache.config import CacheConfig, CacheEntry
+from semantic_llm_cache.exceptions import PromptCacheError
+from semantic_llm_cache.similarity import (
     EmbeddingCache,
 )
-from prompt_cache.stats import _stats_manager
-from prompt_cache.utils import hash_prompt, normalize_prompt
+from semantic_llm_cache.stats import _stats_manager
+from semantic_llm_cache.utils import hash_prompt, normalize_prompt
 
 P = ParamSpec("P")
 R = TypeVar("R")

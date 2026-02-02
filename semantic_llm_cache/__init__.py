@@ -1,5 +1,5 @@
 """
-prompt-cache: Semantic caching for LLM API calls.
+llm-semantic-cache: Semantic caching for LLM API calls.
 
 Cut LLM costs 30% with one decorator.
 """
@@ -9,22 +9,22 @@ __author__ = "Karthick Raja M"
 __license__ = "MIT"
 
 # Core exports
-from prompt_cache.config import CacheConfig
-from prompt_cache.core import (
+from semantic_llm_cache.config import CacheConfig
+from semantic_llm_cache.core import (
     CacheContext,
     CachedLLM,
     cache,
     get_default_backend,
     set_default_backend,
 )
-from prompt_cache.exceptions import (
+from semantic_llm_cache.exceptions import (
     CacheBackendError,
     CacheNotFoundError,
     CacheSerializationError,
     PromptCacheError,
 )
-from prompt_cache.stats import CacheStats, clear_cache, get_stats, invalidate
-from prompt_cache.storage import StorageBackend
+from semantic_llm_cache.stats import CacheStats, clear_cache, get_stats, invalidate
+from semantic_llm_cache.storage import StorageBackend
 
 __all__ = [
     # Version info

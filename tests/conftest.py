@@ -4,8 +4,8 @@ import time
 
 import pytest
 
-from prompt_cache.backends import MemoryBackend
-from prompt_cache.config import CacheConfig, CacheEntry
+from semantic_llm_cache.backends import MemoryBackend
+from semantic_llm_cache.config import CacheConfig, CacheEntry
 
 
 @pytest.fixture

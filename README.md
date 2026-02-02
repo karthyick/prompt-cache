@@ -1,14 +1,17 @@
-# prompt-cache
+# semantic-llm-cache
 
 **Semantic caching for LLM API calls - reduce costs with one decorator.**
 
-[![PyPI](https://img.shields.io/pypi/v/prompt-cache)](https://pypi.org/project/prompt-cache/)
+[![PyPI](https://img.shields.io/pypi/v/semantic-llm-cache)](https://pypi.org/project/semantic-llm-cache/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/pypi/pyversions/prompt-cache)](https://pypi.org/project/prompt-cache/)
+[![Python](https://img.shields.io/pypi/pyversions/semantic-llm-cache)](https://pypi.org/project/semantic-llm-cache/)
+[![GitHub](https://img.shields.io/badge/GitHub-karthyick%2Fprompt--cache-blue)](https://github.com/karthyick/prompt-cache)
+
+**Source**: https://github.com/karthyick/prompt-cache
 
 ## Overview
 
-LLM API calls are expensive and slow. In production applications, **20-40% of prompts are semantically identical** but get charged as separate API calls. `prompt-cache` solves this with a simple decorator that:
+LLM API calls are expensive and slow. In production applications, **20-40% of prompts are semantically identical** but get charged as separate API calls. `semantic-llm-cache` solves this with a simple decorator that:
 
 - ✅ **Caches semantically similar prompts** (not just exact matches)
 - ✅ **Reduces API costs by 20-40%**
@@ -20,16 +23,16 @@ LLM API calls are expensive and slow. In production applications, **20-40% of pr
 
 ```bash
 # Core (exact match only)
-pip install prompt-cache
+pip install semantic-llm-cache
 
 # With semantic similarity
-pip install prompt-cache[semantic]
+pip install semantic-llm-cache[semantic]
 
 # With Redis backend
-pip install prompt-cache[redis]
+pip install semantic-llm-cache[redis]
 
 # With everything
-pip install prompt-cache[all]
+pip install semantic-llm-cache[all]
 ```
 
 ## Quick Start
@@ -37,7 +40,7 @@ pip install prompt-cache[all]
 ### Basic Caching (Exact Match)
 
 ```python
-from prompt_cache import cache
+from semantic_llm_cache import cache
 
 @cache()
 def ask_gpt(prompt: str) -> str:
@@ -55,10 +58,10 @@ ask_gpt("What is Python?")  # FREE, <10ms
 
 ### Semantic Matching
 
-Match semantically similar prompts (requires `pip install prompt-cache[semantic]`):
+Match semantically similar prompts (requires `pip install semantic-llm-cache[semantic]`):
 
 ```python
-from prompt_cache import cache
+from semantic_llm_cache import cache
 
 @cache(similarity=0.90)
 def ask_gpt(prompt: str) -> str:
@@ -73,7 +76,7 @@ ask_gpt("What is Rust?")     # API call (different topic)
 ### TTL Expiration
 
 ```python
-from prompt_cache import cache
+from semantic_llm_cache import cache
 
 @cache(ttl=3600)  # 1 hour
 def ask_gpt(prompt: str) -> str:
@@ -83,7 +86,7 @@ def ask_gpt(prompt: str) -> str:
 ### Cache Statistics
 
 ```python
-from prompt_cache import get_stats
+from semantic_llm_cache import get_stats
 
 stats = get_stats()
 # {
@@ -98,7 +101,7 @@ stats = get_stats()
 ### Cache Management
 
 ```python
-from prompt_cache import clear_cache, invalidate
+from semantic_llm_cache import clear_cache, invalidate
 
 # Clear all cached entries
 clear_cache()
@@ -112,8 +115,8 @@ invalidate(pattern="Python")
 ### Multiple Cache Backends
 
 ```python
-from prompt_cache import cache
-from prompt_cache.backends import RedisBackend
+from semantic_llm_cache import cache
+from semantic_llm_cache.backends import RedisBackend
 
 # Use Redis for distributed caching
 backend = RedisBackend(url="redis://localhost:6379")
@@ -126,7 +129,7 @@ def ask_gpt(prompt: str) -> str:
 ### Context Manager
 
 ```python
-from prompt_cache import CacheContext
+from semantic_llm_cache import CacheContext
 
 with CacheContext(similarity=0.9) as ctx:
     result1 = any_llm_call("prompt 1")
@@ -138,7 +141,7 @@ print(ctx.stats)  # {"hits": 1, "misses": 1}
 ### Wrapper Class
 
 ```python
-from prompt_cache import CachedLLM
+from semantic_llm_cache import CachedLLM
 
 llm = CachedLLM(
     provider="openai",
@@ -180,7 +183,7 @@ def my_llm_function(prompt: str) -> str:
 ### Utility Functions
 
 ```python
-from prompt_cache import (
+from semantic_llm_cache import (
     get_stats,      # Get cache statistics
     clear_cache,    # Clear all cached entries
     invalidate,     # Invalidate by pattern
@@ -195,7 +198,7 @@ from prompt_cache import (
 |---------|-------------|--------------|
 | `MemoryBackend` | In-memory (default) | Built-in |
 | `SQLiteBackend` | Persistent storage | Built-in |
-| `RedisBackend` | Distributed caching | `pip install prompt-cache[redis]` |
+| `RedisBackend` | Distributed caching | `pip install semantic-llm-cache[redis]` |
 
 ## Performance
 
@@ -221,6 +224,10 @@ from prompt_cache import (
 
 MIT License - see [LICENSE](LICENSE) file.
 
+## Source Code
+
+https://github.com/karthyick/prompt-cache
+
 ## Author
 
 **Karthick Raja M** ([@karthyick](https://github.com/karthyick))
@@ -231,4 +238,4 @@ MIT License - see [LICENSE](LICENSE) file.
 
 ---
 
-**Cut LLM costs 30% with one decorator.** `pip install prompt-cache`
+**Cut LLM costs 30% with one decorator.** `pip install semantic-llm-cache`

@@ -1,11 +1,11 @@
-"""Statistics and analytics for prompt-cache."""
+"""Statistics and analytics for llm-semantic-cache."""
 
 from dataclasses import dataclass
 from threading import Lock
 from typing import Any, Callable, Optional
 
-from prompt_cache.backends import MemoryBackend
-from prompt_cache.backends.base import BaseBackend
+from semantic_llm_cache.backends import MemoryBackend
+from semantic_llm_cache.backends.base import BaseBackend
 
 
 @dataclass
@@ -280,7 +280,7 @@ def warm_cache(
         >>> warm_cache(["What is Python?", "Explain AI"], ask_gpt)
         2
     """
-    from prompt_cache.core import cache
+    from semantic_llm_cache.core import cache
 
     # Create a temporary cached function
     cached_func: Callable[[str], Any] = cache(namespace=namespace)(llm_func)

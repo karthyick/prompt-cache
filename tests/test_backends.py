@@ -6,10 +6,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from prompt_cache.backends import MemoryBackend
-from prompt_cache.backends.sqlite import SQLiteBackend  # noqa: F401
-from prompt_cache.config import CacheEntry
-from prompt_cache.exceptions import CacheBackendError
+from semantic_llm_cache.backends import MemoryBackend
+from semantic_llm_cache.backends.sqlite import SQLiteBackend  # noqa: F401
+from semantic_llm_cache.config import CacheEntry
+from semantic_llm_cache.exceptions import CacheBackendError
 
 
 class TestBaseBackend:
@@ -210,7 +210,7 @@ class TestSQLiteBackend:
     @pytest.fixture
     def sqlite_backend(self, tmp_path):
         """Create SQLite backend with temp database."""
-        from prompt_cache.backends.sqlite import SQLiteBackend
+        from semantic_llm_cache.backends.sqlite import SQLiteBackend
 
         db_path = tmp_path / "test_cache.db"
         return SQLiteBackend(db_path)
@@ -271,7 +271,7 @@ class TestRedisBackend:
     @pytest.fixture
     def mock_redis(self):
         """Create mock Redis client."""
-        with patch("prompt_cache.backends.redis.redis_lib") as mock:
+        with patch("semantic_llm_cache.backends.redis.redis_lib") as mock:
             mock_client = MagicMock()
             mock.from_url.return_value = mock_client
             mock_client.ping.return_value = True
@@ -283,7 +283,7 @@ class TestRedisBackend:
     @pytest.fixture
     def redis_backend(self, mock_redis):
         """Create Redis backend with mocked client."""
-        from prompt_cache.backends.redis import RedisBackend
+        from semantic_llm_cache.backends.redis import RedisBackend
 
         backend = RedisBackend(url="redis://localhost:6379/0")
         backend._redis = mock_redis
@@ -333,7 +333,7 @@ class TestRedisBackend:
 
     def test_clear(self, redis_backend, mock_redis):
         """Test clear operation."""
-        mock_redis.keys.return_value = [b"prompt_cache:key1", b"prompt_cache:key2"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:key1", b"semantic_llm_cache:key2"]
         redis_backend.clear()
         mock_redis.delete.assert_called_once()
 
@@ -357,7 +357,7 @@ class TestRedisBackend:
             "output_tokens": sample_entry.output_tokens,
         }
 
-        mock_redis.keys.return_value = [b"prompt_cache:key1", b"prompt_cache:key2"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:key1", b"semantic_llm_cache:key2"]
         mock_redis.get.return_value = json.dumps(entry_dict).encode()
 
         results = redis_backend.iterate()
@@ -387,7 +387,7 @@ class TestRedisBackend:
                 return json.dumps(entry1_dict).encode()
             return json.dumps(entry2_dict).encode()
 
-        mock_redis.keys.return_value = [b"prompt_cache:key1", b"prompt_cache:key2"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:key1", b"semantic_llm_cache:key2"]
         mock_redis.get.side_effect = mock_get
 
         results = redis_backend.iterate(namespace="ns1")
@@ -408,7 +408,7 @@ class TestRedisBackend:
             "output_tokens": 0,
         }
 
-        mock_redis.keys.return_value = [b"prompt_cache:key1"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:key1"]
         mock_redis.get.return_value = json.dumps(entry_dict).encode()
 
         result = redis_backend.find_similar([1.0, 0.0, 0.0], threshold=0.9)
@@ -430,7 +430,7 @@ class TestRedisBackend:
             "output_tokens": 0,
         }
 
-        mock_redis.keys.return_value = [b"prompt_cache:key1"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:key1"]
         mock_redis.get.return_value = json.dumps(entry_dict).encode()
 
         # Query with orthogonal vector
@@ -439,12 +439,12 @@ class TestRedisBackend:
 
     def test_get_stats(self, redis_backend, mock_redis):
         """Test get_stats returns correct info."""
-        mock_redis.keys.return_value = [b"prompt_cache:key1", b"prompt_cache:key2"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:key1", b"semantic_llm_cache:key2"]
         stats = redis_backend.get_stats()
 
         assert "prefix" in stats
         assert stats["size"] == 2
-        assert stats["prefix"] == "prompt_cache:"
+        assert stats["prefix"] == "semantic_llm_cache:"
 
     def test_get_stats_error_handling(self, redis_backend, mock_redis):
         """Test get_stats handles Redis errors gracefully."""
@@ -457,7 +457,7 @@ class TestRedisBackend:
     def test_make_key(self, redis_backend):
         """Test key prefixing."""
         result = redis_backend._make_key("test_key")
-        assert result == "prompt_cache:test_key"
+        assert result == "semantic_llm_cache:test_key"
 
     def test_entry_to_dict(self, redis_backend, sample_entry):
         """Test converting entry to dictionary."""
@@ -503,11 +503,11 @@ class TestRedisBackend:
 
     def test_connection_failure(self):
         """Test connection failure raises CacheBackendError."""
-        from prompt_cache.backends.redis import RedisBackend
-        from prompt_cache.exceptions import CacheBackendError
+        from semantic_llm_cache.backends.redis import RedisBackend
+        from semantic_llm_cache.exceptions import CacheBackendError
 
         # Need to patch both the import and the from_url call
-        with patch("prompt_cache.backends.redis.redis_lib") as mock_redis:
+        with patch("semantic_llm_cache.backends.redis.redis_lib") as mock_redis:
             mock_client = MagicMock()
             mock_client.ping.side_effect = Exception("Connection refused")
             mock_redis.from_url.return_value = mock_client
@@ -588,7 +588,7 @@ class TestRedisBackend:
                 return json.dumps(expired_dict).encode()
             return json.dumps(valid_dict).encode()
 
-        mock_redis.keys.return_value = [b"prompt_cache:expired", b"prompt_cache:valid"]
+        mock_redis.keys.return_value = [b"semantic_llm_cache:expired", b"semantic_llm_cache:valid"]
         mock_redis.get.side_effect = mock_get
 
         results = redis_backend.iterate()
@@ -598,7 +598,7 @@ class TestRedisBackend:
 
     def test_set_error_handling(self, redis_backend, mock_redis, sample_entry):
         """Test set handles Redis errors."""
-        from prompt_cache.exceptions import CacheBackendError
+        from semantic_llm_cache.exceptions import CacheBackendError
 
         mock_redis.set.side_effect = Exception("Redis error")
 
@@ -607,7 +607,7 @@ class TestRedisBackend:
 
     def test_delete_error_handling(self, redis_backend, mock_redis):
         """Test delete handles Redis errors."""
-        from prompt_cache.exceptions import CacheBackendError
+        from semantic_llm_cache.exceptions import CacheBackendError
 
         mock_redis.delete.side_effect = Exception("Redis error")
 
@@ -616,7 +616,7 @@ class TestRedisBackend:
 
     def test_iterate_error_handling(self, redis_backend, mock_redis):
         """Test iterate handles Redis errors."""
-        from prompt_cache.exceptions import CacheBackendError
+        from semantic_llm_cache.exceptions import CacheBackendError
 
         mock_redis.keys.side_effect = Exception("Redis error")
 
@@ -635,7 +635,7 @@ class TestRedisBackend:
     def test_import_error_without_package(self):
         """Test ImportError when redis package not installed."""
         # This test validates the import guard in redis.py
-        from prompt_cache.backends import redis as redis_module
+        from semantic_llm_cache.backends import redis as redis_module
 
         # Check that RedisBackend is defined
         assert hasattr(redis_module, "RedisBackend")

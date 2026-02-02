@@ -5,10 +5,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from prompt_cache import CacheContext, CachedLLM, cache, get_default_backend, set_default_backend
-from prompt_cache.backends import MemoryBackend
-from prompt_cache.config import CacheConfig, CacheEntry
-from prompt_cache.exceptions import PromptCacheError
+from semantic_llm_cache import CacheContext, CachedLLM, cache, get_default_backend, set_default_backend
+from semantic_llm_cache.backends import MemoryBackend
+from semantic_llm_cache.config import CacheConfig, CacheEntry
+from semantic_llm_cache.exceptions import PromptCacheError
 
 
 class TestCacheDecorator:
@@ -404,7 +404,7 @@ class TestCacheDecoratorErrorPaths:
 
     def test_backend_set_raises_error(self):
         """Test that backend.set errors propagate."""
-        from prompt_cache.exceptions import CacheBackendError
+        from semantic_llm_cache.exceptions import CacheBackendError
 
         backend = MagicMock()
         # Backend set wraps exceptions in CacheBackendError
@@ -421,7 +421,7 @@ class TestCacheDecoratorErrorPaths:
 
     def test_backend_get_raises_error(self):
         """Test that backend.get errors propagate."""
-        from prompt_cache.exceptions import CacheBackendError
+        from semantic_llm_cache.exceptions import CacheBackendError
 
         backend = MagicMock()
         # Backend get wraps exceptions in CacheBackendError
@@ -437,7 +437,7 @@ class TestCacheDecoratorErrorPaths:
 
     def test_llm_error_still_wrapped(self):
         """Test that LLM errors are still wrapped in PromptCacheError."""
-        from prompt_cache.exceptions import PromptCacheError
+        from semantic_llm_cache.exceptions import PromptCacheError
 
         @cache()
         def failing_func(prompt: str) -> str:
@@ -519,7 +519,7 @@ class TestBackendManagementAdvanced:
         backend = get_default_backend()
 
         # Create an entry
-        from prompt_cache.config import CacheEntry
+        from semantic_llm_cache.config import CacheEntry
         entry = CacheEntry(
             prompt="test",
             response="response",

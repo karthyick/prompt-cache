@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from prompt_cache.similarity import (
+from semantic_llm_cache.similarity import (
     DummyEmbeddingProvider,
     EmbeddingCache,
     OpenAIEmbeddingProvider,

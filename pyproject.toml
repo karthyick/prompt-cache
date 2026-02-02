@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "prompt-cache"
+name = "semantic-llm-cache"
 version = "0.1.0"
 description = "Semantic caching for LLM API calls - reduce costs with one decorator"
 readme = "README.md"
@@ -76,11 +76,11 @@ Repository = "https://github.com/karthyick/prompt-cache.git"
 "Bug Tracker" = "https://github.com/karthyick/prompt-cache/issues"
 
 [tool.setuptools.packages.find]
-include = ["prompt_cache*"]
+include = ["semantic_llm_cache*"]
 exclude = ["tests*", "examples*", "docs*"]
 
 [tool.setuptools.package-data]
-prompt_cache = ["py.typed"]
+semantic_llm_cache = ["py.typed"]
 
 [tool.black]
 line-length = 100
@@ -106,4 +106,4 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=prompt_cache --cov-report=html --cov-report=term-missing --cov-fail-under=90"
+addopts = "-v --cov=semantic_llm_cache --cov-report=html --cov-report=term-missing --cov-fail-under=90"

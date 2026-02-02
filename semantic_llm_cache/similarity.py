@@ -1,4 +1,4 @@
-"""Embedding generation and similarity matching for prompt-cache."""
+"""Embedding generation and similarity matching for llm-semantic-cache."""
 
 import hashlib
 from functools import lru_cache
@@ -6,7 +6,7 @@ from typing import Optional
 
 import numpy as np
 
-from prompt_cache.exceptions import PromptCacheError
+from semantic_llm_cache.exceptions import PromptCacheError
 
 
 class EmbeddingProvider:
