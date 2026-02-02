@@ -1,0 +1,109 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prompt-cache"
+version = "0.1.0"
+description = "Semantic caching for LLM API calls - reduce costs with one decorator"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Karthick Raja M", email = "karthickrajam18@gmail.com"}
+]
+keywords = [
+    "llm",
+    "cache",
+    "semantic",
+    "openai",
+    "anthropic",
+    "gpt",
+    "claude",
+    "prompt",
+    "optimization",
+    "cost-reduction",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+semantic = [
+    "sentence-transformers>=2.2.0",
+]
+redis = [
+    "redis>=4.0.0",
+]
+openai = [
+    "openai>=1.0.0",
+]
+all = [
+    "sentence-transformers>=2.2.0",
+    "redis>=4.0.0",
+    "openai>=1.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "build>=1.0.0",
+    "twine>=4.0.0",
+    "bump2version>=1.0.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/karthyick/prompt-cache"
+Documentation = "https://github.com/karthyick/prompt-cache#readme"
+Repository = "https://github.com/karthyick/prompt-cache.git"
+"Bug Tracker" = "https://github.com/karthyick/prompt-cache/issues"
+
+[tool.setuptools.packages.find]
+include = ["prompt_cache*"]
+exclude = ["tests*", "examples*", "docs*"]
+
+[tool.setuptools.package-data]
+prompt_cache = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311', 'py312', 'py313']
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disable_error_code = ["annotation-unchecked"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=prompt_cache --cov-report=html --cov-report=term-missing --cov-fail-under=90"

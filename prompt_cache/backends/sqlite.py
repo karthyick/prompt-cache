@@ -1,0 +1,282 @@
+"""SQLite persistent storage backend."""
+
+import json
+import sqlite3
+from pathlib import Path
+from typing import Any, Optional
+
+from prompt_cache.backends.base import BaseBackend
+from prompt_cache.config import CacheEntry
+from prompt_cache.exceptions import CacheBackendError
+
+
+class SQLiteBackend(BaseBackend):
+    """SQLite-based persistent cache storage.
+
+    Stores cache entries in a SQLite database for persistence
+    across process restarts.
+    """
+
+    def __init__(self, db_path: str | Path = ":memory:") -> None:
+        """Initialize SQLite backend.
+
+        Args:
+            db_path: Path to SQLite database file, or ":memory:" for in-memory DB
+        """
+        super().__init__()
+        self._db_path = str(db_path) if isinstance(db_path, Path) else db_path
+        self._conn: Optional[sqlite3.Connection] = None
+        self._initialize_db()
+
+    def _get_connection(self) -> sqlite3.Connection:
+        """Get database connection, creating if needed."""
+        if self._conn is None:
+            self._conn = sqlite3.connect(self._db_path, check_same_thread=False)
+            self._conn.row_factory = sqlite3.Row
+        return self._conn
+
+    def _initialize_db(self) -> None:
+        """Initialize database schema."""
+        conn = self._get_connection()
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS cache_entries (
+                key TEXT PRIMARY KEY,
+                prompt TEXT NOT NULL,
+                response TEXT NOT NULL,
+                embedding TEXT,
+                created_at REAL NOT NULL,
+                ttl INTEGER,
+                namespace TEXT NOT NULL DEFAULT 'default',
+                hit_count INTEGER DEFAULT 0,
+                input_tokens INTEGER DEFAULT 0,
+                output_tokens INTEGER DEFAULT 0
+            )
+        """
+        )
+        conn.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_namespace
+            ON cache_entries(namespace)
+        """
+        )
+        conn.commit()
+
+    def _row_to_entry(self, row: sqlite3.Row) -> CacheEntry:
+        """Convert database row to CacheEntry.
+
+        Args:
+            row: SQLite row object
+
+        Returns:
+            CacheEntry instance
+        """
+        embedding = None
+        if row["embedding"]:
+            embedding = json.loads(row["embedding"])
+
+        return CacheEntry(
+            prompt=row["prompt"],
+            response=json.loads(row["response"]),
+            embedding=embedding,
+            created_at=row["created_at"],
+            ttl=row["ttl"],
+            namespace=row["namespace"],
+            hit_count=row["hit_count"],
+            input_tokens=row["input_tokens"],
+            output_tokens=row["output_tokens"],
+        )
+
+    def get(self, key: str) -> Optional[CacheEntry]:
+        """Retrieve cache entry by key.
+
+        Args:
+            key: Cache key to retrieve
+
+        Returns:
+            CacheEntry if found and not expired, None otherwise
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.execute(
+                "SELECT * FROM cache_entries WHERE key = ?", (key,)
+            )
+            row = cursor.fetchone()
+
+            if row is None:
+                self._increment_misses()
+                return None
+
+            entry = self._row_to_entry(row)
+
+            if self._check_expired(entry):
+                self.delete(key)
+                self._increment_misses()
+                return None
+
+            self._increment_hits()
+            entry.hit_count += 1
+
+            # Update hit count in database
+            conn.execute(
+                "UPDATE cache_entries SET hit_count = hit_count + 1 WHERE key = ?",
+                (key,),
+            )
+            conn.commit()
+
+            return entry
+        except Exception as e:
+            raise CacheBackendError(f"Failed to get entry: {e}") from e
+
+    def set(self, key: str, entry: CacheEntry) -> None:
+        """Store cache entry.
+
+        Args:
+            key: Cache key to store under
+            entry: CacheEntry to store
+        """
+        try:
+            conn = self._get_connection()
+            embedding_json = json.dumps(entry.embedding) if entry.embedding else None
+            response_json = json.dumps(entry.response)
+
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO cache_entries
+                (key, prompt, response, embedding, created_at, ttl, namespace,
+                 hit_count, input_tokens, output_tokens)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    key,
+                    entry.prompt,
+                    response_json,
+                    embedding_json,
+                    entry.created_at,
+                    entry.ttl,
+                    entry.namespace,
+                    entry.hit_count,
+                    entry.input_tokens,
+                    entry.output_tokens,
+                ),
+            )
+            conn.commit()
+        except Exception as e:
+            raise CacheBackendError(f"Failed to set entry: {e}") from e
+
+    def delete(self, key: str) -> bool:
+        """Delete cache entry.
+
+        Args:
+            key: Cache key to delete
+
+        Returns:
+            True if entry was deleted, False if not found
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.execute(
+                "DELETE FROM cache_entries WHERE key = ?", (key,)
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        except Exception as e:
+            raise CacheBackendError(f"Failed to delete entry: {e}") from e
+
+    def clear(self) -> None:
+        """Clear all cache entries."""
+        try:
+            conn = self._get_connection()
+            conn.execute("DELETE FROM cache_entries")
+            conn.commit()
+        except Exception as e:
+            raise CacheBackendError(f"Failed to clear cache: {e}") from e
+
+    def iterate(
+        self, namespace: Optional[str] = None
+    ) -> list[tuple[str, CacheEntry]]:
+        """Iterate over cache entries, optionally filtered by namespace.
+
+        Args:
+            namespace: Optional namespace filter
+
+        Returns:
+            List of (key, entry) tuples
+        """
+        try:
+            conn = self._get_connection()
+
+            if namespace is None:
+                cursor = conn.execute("SELECT key, * FROM cache_entries")
+            else:
+                cursor = conn.execute(
+                    "SELECT key, * FROM cache_entries WHERE namespace = ?",
+                    (namespace,),
+                )
+
+            results = []
+            for row in cursor.fetchall():
+                key = row["key"]
+                entry = self._row_to_entry(row)
+                if not self._check_expired(entry):
+                    results.append((key, entry))
+
+            return results
+        except Exception as e:
+            raise CacheBackendError(f"Failed to iterate entries: {e}") from e
+
+    def find_similar(
+        self,
+        embedding: list[float],
+        threshold: float,
+        namespace: Optional[str] = None,
+    ) -> Optional[tuple[str, CacheEntry, float]]:
+        """Find semantically similar cached entry.
+
+        Args:
+            embedding: Query embedding vector
+            threshold: Minimum similarity score (0-1)
+            namespace: Optional namespace filter
+
+        Returns:
+            (key, entry, similarity) tuple if found above threshold, None otherwise
+        """
+        try:
+            entries = self.iterate(namespace)
+            candidates = [
+                (k, v) for k, v in entries if v.embedding is not None
+            ]
+            return self._find_best_match(candidates, embedding, threshold)
+        except Exception as e:
+            raise CacheBackendError(f"Failed to find similar entry: {e}") from e
+
+    def get_stats(self) -> dict[str, Any]:
+        """Get backend statistics.
+
+        Returns:
+            Dictionary with size, database path, hits, misses
+        """
+        base_stats = super().get_stats()
+
+        try:
+            conn = self._get_connection()
+            cursor = conn.execute("SELECT COUNT(*) FROM cache_entries")
+            size = cursor.fetchone()[0]
+
+            return {
+                **base_stats,
+                "size": size,
+                "db_path": self._db_path,
+            }
+        except Exception as e:
+            return {**base_stats, "size": 0, "db_path": self._db_path, "error": str(e)}
+
+    def close(self) -> None:
+        """Close database connection."""
+        if self._conn is not None:
+            self._conn.close()
+            self._conn = None
+
+    def __del__(self) -> None:
+        """Cleanup on deletion."""
+        self.close()
