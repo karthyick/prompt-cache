@@ -260,10 +260,6 @@ https://github.com/karthyick/prompt-cache
 
 ---
 
-## ⭐ Star on GitHub
-
-If this cut your LLM bill, [star the repo](https://github.com/karthyick/prompt-cache) — it helps others find it.
-
 Built by [Karthick Raja M](https://github.com/karthyick) · [aichargeworks.com](https://aichargeworks.com)
 
 ---
